@@ -3,11 +3,20 @@ html
     head
         meta(name="viewport", content="width=device-width, initial-scale=1.0")
         title Rabbi cutter
+        link(href="https://fonts.googleapis.com/css?family=Roboto", rel="stylesheet")
         link(href='./styles/main.css', rel='stylesheet')
+        link(rel="shortcut icon", href="http://www.iconj.com/ico/z/1/z1iy5rqo7d.ico", type="image/x-icon")
 
 
     body
-        div hola amigos
+        h1 Welcome to Rabbi Cutter
+        .p-l-40
+            input.hide(type="file", id="imageLoader", name="imageLoader")
+            label.btn(for="imageLoader") Choose a victim...
+        .row
+            .col.width-50
+                canvas(id="canvas")
+            .col.width-50
 
         script(src="scripts/components/jquery/jquery-3.1.1.min.js")
         script(src="scripts/components/jquery/jquery-ui.js")
