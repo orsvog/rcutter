@@ -11,12 +11,13 @@ html
     body
         h1 Welcome to Rabbi Cutter
         .p-l-40
-            input.hide(type="file", id="imageLoader", name="imageLoader")
-            label.btn(for="imageLoader") Choose a victim...
+            input.hide(type="file", id="js-fileinput", name="imageLoader", accept="image/jpeg,image/png,image/gif")
+            label.btn(for="js-fileinput") Choose a file...
         .row
             .col.width-50
-                canvas(id="canvas")
+                canvas(id="js-editorcanvas")
             .col.width-50
+                canvas(id="js-previewcanvas")
 
         script(src="scripts/components/jquery/jquery-3.1.1.min.js")
         script(src="scripts/components/jquery/jquery-ui.js")
