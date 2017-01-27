@@ -4,6 +4,7 @@ class RabbiCutter {
 
     constructor (options) {
         this.canvas = options.canvas;
+        this.canvasParent = $(this.canvas).parent();
         this.context = options.canvas.getContext('2d');
         this.canvasScale = 1;
 
@@ -22,6 +23,8 @@ class RabbiCutter {
         this.eventMouseMove = this._onmousemove.bind(this);
         this.eventMouseUp = this._onmouseup.bind(this);
         this.eventMouseLeave = this._onmouseleave.bind(this);
+
+        window.onresize = this._onresize.bind(this);
     }
 
     loadImage (img) {
@@ -38,9 +41,14 @@ class RabbiCutter {
     render() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this._displayImage();
+        this._updateScale();
         this._drawCropWindow();
         this._fillPreview();
         this._updateStyles();
+    }
+
+    _onresize() {
+        this._updateScale();
     }
 
     _onmousedown(e) {
@@ -88,9 +96,11 @@ class RabbiCutter {
         this.canvas.width = this.img.width;
         this.canvas.height = this.img.height;
         this.context.drawImage(this.img,0,0);
+    }
 
-        this.canvasScale = this.canvas.width / $(this.canvas).parent().width();
-
+    _updateScale () {
+        this.canvasScale = this.canvas.width / this.canvasParent.width();
+        console.log(this.canvasScale);
     }
 
     _fillPreview () {
@@ -162,9 +172,7 @@ class RabbiCutter {
         if (this.sizeRule === 'contain') {
             let styles;
 
-            const parent = $(this.canvas).parent();
-
-            if(this.canvas.width / this.canvas.height > parent.width() / parent.height()) {
+            if(this.canvas.width / this.canvas.height > this.canvasParent.width() / this.canvasParent.height()) {
                 styles = {
                     width: '100%',
                     height: 'auto',
@@ -209,9 +217,7 @@ class RabbiCutter {
                 break;
             default:
             case 'contain':
-                const parent = $(this.canvas).parent();
-
-                if(this.canvas.width / this.canvas.height > parent.width() / parent.height()) {
+                if(this.canvas.width / this.canvas.height > this.canvasParent.width() / this.canvasParent.height()) {
                     styles = {
                         width: '100%',
                         height: 'auto',
