@@ -5,6 +5,7 @@ class RabbiCutter {
     constructor (options) {
         this.canvas = options.canvas;
         this.context = options.canvas.getContext('2d');
+        this.canvasScale = 1;
 
         this.preview = options.preview;
 
@@ -14,7 +15,7 @@ class RabbiCutter {
             pos: {x:10, y:10},
             size: {x:100, y:100},
             dragSize: 8
-        }
+        };
 
         this._initStyles();
 
@@ -24,27 +25,36 @@ class RabbiCutter {
     }
 
     loadImage (img) {
+        this.crop = {
+            pos: {x:10, y:10},
+            size: {x:100, y:100},
+            dragSize: 8
+        };
         this.img = img;
         this.render();
         this.canvas.addEventListener('mousedown', this._onmousedown.bind(this));
-
     }
 
     render() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this._displayImage();
-        this._fillPreview();
         this._drawCropWindow();
+        this._fillPreview();
+        this._updateStyles();
     }
 
     _onmousedown(e) {
-        const position = { x: e.offsetX, y: e.offsetY };
+        const rect = this.canvas.getBoundingClientRect();
+        const position = {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
 
         this.lastEvent = {
             position
         };
 
-        if (this._inCropBounds(position.x, position.y)) {
+        if (this._inCropBounds(position.x * this.canvasScale, position.y * this.canvasScale)) {
             this.canvas.addEventListener('mousemove', this.eventMouseMove);
             this.canvas.addEventListener('mouseup', this.eventMouseUp);
             this.canvas.addEventListener('mouseleave', this.eventMouseLeave);
@@ -78,6 +88,8 @@ class RabbiCutter {
         this.canvas.width = this.img.width;
         this.canvas.height = this.img.height;
         this.context.drawImage(this.img,0,0);
+
+        this.canvasScale = this.canvas.width / $(this.canvas).parent().width();
 
     }
 
@@ -127,13 +139,12 @@ class RabbiCutter {
             this._inCanvasBounds(br.x + dx, br.y + dy) &&
             this._inCanvasBounds(tl.x + dx, br.y + dy))
         {
-            this.crop.pos.x += dx;
-            this.crop.pos.y += dy;
+            this.crop.pos.x += dx * this.canvasScale;
+            this.crop.pos.y += dy * this.canvasScale;
         }
     }
 
     _inCanvasBounds(x, y) {
-        console.log(x + ' - ' + this.canvas.width);
         return x >= 0
             && x <= this.canvas.width
             && y >= 0
@@ -145,6 +156,30 @@ class RabbiCutter {
             && x <= this.crop.pos.x + this.crop.size.x
             && y >= this.crop.pos.y
             && y <= this.crop.pos.y + this.crop.size.y;
+    }
+
+    _updateStyles () {
+        if (this.sizeRule === 'contain') {
+            let styles;
+
+            const parent = $(this.canvas).parent();
+
+            if(this.canvas.width / this.canvas.height > parent.width() / parent.height()) {
+                styles = {
+                    width: '100%',
+                    height: 'auto',
+                    margin: 'auto'
+                };
+            } else {
+                styles = {
+                    width: 'auto',
+                    height: '100%',
+                    margin: 'auto'
+                };
+            }
+            $(this.canvas).css(styles);
+        }
+
     }
 
     _initStyles () {

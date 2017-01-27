@@ -10,13 +10,17 @@ html
 
     body
         h1 Welcome to Rabbi Cutter
-        .p-l-40
+        .p-l-40.m-b-20
             input.hide(type="file", id="js-fileinput", name="imageLoader", accept="image/jpeg,image/png,image/gif")
             label.btn(for="js-fileinput") Choose a file...
         .row
-            .col.width-50
-                canvas(id="js-editorcanvas")
-            .col.width-50
+            .col.width-20
+                h3 Crop shape:
+                input.m-l-40(type="button", value="circle")
+                input.m-l-10(type="button", value="rectangle")
+            .col.width-80
+                .rcutter
+                    canvas(id="js-editorcanvas")
                 canvas(id="js-previewcanvas")
 
         script(src="scripts/components/jquery/jquery-3.1.1.min.js")
