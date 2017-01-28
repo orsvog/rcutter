@@ -16,12 +16,16 @@ html
         .row
             .col.width-20
                 h3 Crop shape:
-                input.m-l-40(type="button", value="circle")
-                input.m-l-10(type="button", value="rectangle")
+                div.m-l-40
+                    input(type="button", value="circle")
+                    input.m-l-10(type="button", value="rectangle")
+                div.m-l-40.m-t-20
+                    input(type="button", value="download", onclick="downloadImage()")
             .col.width-80
                 .rcutter
                     canvas(id="js-editorcanvas")
-                canvas(id="js-previewcanvas")
+                a(href="/images/myw3schoolsimage.jpg", download)
+                    canvas(id="js-previewcanvas")
 
         script(src="scripts/components/jquery/jquery-3.1.1.min.js")
         script(src="scripts/components/jquery/jquery-ui.js")

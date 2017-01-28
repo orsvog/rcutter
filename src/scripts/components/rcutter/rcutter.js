@@ -38,13 +38,20 @@ class RabbiCutter {
         this.canvas.addEventListener('mousedown', this._onmousedown.bind(this));
     }
 
+    downloadImage(imageName = this._randomString() + '.png') {
+        const link = document.createElement('a');
+        link.href = this.preview.toDataURL();
+        link.download = imageName;
+        link.click();
+    }
+
     render() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this._displayImage();
-        this._updateScale();
-        this._drawCropWindow();
-        this._fillPreview();
         this._updateStyles();
+        this._updateScale();
+        this._fillPreview();
+        this._drawCropWindow();
     }
 
     _onresize() {
@@ -99,7 +106,13 @@ class RabbiCutter {
     }
 
     _updateScale () {
-        this.canvasScale = this.canvas.width / this.canvasParent.width();
+        console.log();
+        if (this.canvas.style.width === 'auto') {
+            this.canvasScale = this.canvas.height / this.canvasParent.height();
+        } else {
+            this.canvasScale = this.canvas.width / this.canvasParent.width();
+        }
+
         console.log(this.canvasScale);
     }
 
@@ -235,5 +248,15 @@ class RabbiCutter {
         }
 
         $(this.canvas).css(styles);
+    }
+
+    _randomString(length = 5) {
+        let result = "";
+        var symbols = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+        for( let i = 0; i < length; i++ ) {
+            result += symbols.charAt(Math.floor(Math.random() * symbols.length));
+        }
+        return result;
     }
 }

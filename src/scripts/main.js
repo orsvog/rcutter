@@ -4,7 +4,7 @@ $(document).ready(() => {
     const options = {
         canvas: document.getElementById('js-editorcanvas'),
         preview: document.getElementById('js-previewcanvas'),
-        sizeRule: 'contain'
+        sizeRule: 'stretchByWidth'
     }
     $.rcutter = new RabbiCutter(options);
 
@@ -24,6 +24,10 @@ $('#js-fileinput').change(e => {
 
     reader.readAsDataURL(e.target.files[0]);
 });
+
+function downloadImage() {
+    $.rcutter.downloadImage();
+}
 
 function _loadImage(src) {
     const img = new Image();
