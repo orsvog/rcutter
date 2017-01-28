@@ -12,6 +12,8 @@ class RabbiCutter {
 
         this.sizeRule = options.sizeRule;
 
+        this.cropShape = options.cropShape || 'rectangle';
+
         this.crop = {
             pos: {x:10, y:10},
             size: {x:100, y:100},
@@ -43,6 +45,10 @@ class RabbiCutter {
         link.href = this.preview.toDataURL();
         link.download = imageName;
         link.click();
+    }
+
+    updateCropShape(cropShape) {
+        this.cropShape = cropShape;
     }
 
     render() {
@@ -128,21 +134,65 @@ class RabbiCutter {
         this.preview.width = image.width;
         this.preview.height = image.height;
 
-        context.drawImage(this.canvas,
-            this.crop.pos.x, this.crop.pos.y,
-            this.crop.size.x, this.crop.size.y,
-            0, 0,
-            this.preview.width, this.preview.height);
+        switch(this.cropShape) {
+            default:
+            case 'rectangle': {
+                context.drawImage(this.canvas,
+                    this.crop.pos.x, this.crop.pos.y,
+                    this.crop.size.x, this.crop.size.y,
+                    0, 0,
+                    this.preview.width, this.preview.height);
+
+                break;
+            }
+            case 'circle': {
+                context.save();
+                context.beginPath();
+                context.arc(this.crop.size.x / 2, this.crop.size.y / 2, this.crop.size.x / 2, 0, Math.PI * 2, true);
+                context.closePath();
+                context.clip();
+
+                context.drawImage(this.canvas,
+                    this.crop.pos.x, this.crop.pos.y,
+                    this.crop.size.x, this.crop.size.y,
+                    0, 0,
+                    this.preview.width, this.preview.height);
+
+                context.beginPath();
+                context.arc(0, 0, this.crop.size.x / 2, 0, Math.PI * 2, true);
+                context.clip();
+                context.closePath();
+                context.restore();
+
+                break;
+            }
+        }
     }
 
     _drawCropWindow () {
         this.context.strokeStyle = 'black';
         this.context.fillStyle = 'red';
-        this.context.strokeRect(this.crop.pos.x, this.crop.pos.y, this.crop.size.x, this.crop.size.y);
 
-        this.context.fillRect(this.crop.pos.x + this.crop.size.x - this.crop.dragSize / 2,
-            this.crop.pos.y + this.crop.size.y - this.crop.dragSize / 2,
-            this.crop.dragSize, this.crop.dragSize);
+        switch(this.cropShape) {
+            default:
+            case 'rectangle': {
+                this.context.strokeRect(this.crop.pos.x, this.crop.pos.y, this.crop.size.x, this.crop.size.y);
+
+                // this.context.fillRect(this.crop.pos.x + this.crop.size.x - this.crop.dragSize / 2,
+                //     this.crop.pos.y + this.crop.size.y - this.crop.dragSize / 2,
+                //     this.crop.dragSize, this.crop.dragSize);
+
+                break;
+            }
+            case 'circle': {
+                this.context.beginPath();
+                this.context.arc(this.crop.pos.x + this.crop.size.x / 2, this.crop.pos.y + this.crop.size.y / 2, this.crop.size.x / 2, 0, 2 * Math.PI);
+                this.context.stroke();
+
+                break;
+            }
+        }
+
     }
 
     _moveCropWindow(dx, dy) {

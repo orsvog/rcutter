@@ -17,15 +17,14 @@ html
             .col.width-20
                 h3 Crop shape:
                 div.m-l-40
-                    input(type="button", value="circle")
-                    input.m-l-10(type="button", value="rectangle")
+                    input(type="button", value="circle", onclick="updateShape('circle')")
+                    input.m-l-10(type="button", value="rectangle", onclick="updateShape('rectangle')")
                 div.m-l-40.m-t-20
                     input(type="button", value="download", onclick="downloadImage()")
             .col.width-80
                 .rcutter
                     canvas(id="js-editorcanvas")
-                a(href="/images/myw3schoolsimage.jpg", download)
-                    canvas(id="js-previewcanvas")
+                canvas(id="js-previewcanvas", onclick="downloadImage()", style="cursor: pointer")
 
         script(src="scripts/components/jquery/jquery-3.1.1.min.js")
         script(src="scripts/components/jquery/jquery-ui.js")
