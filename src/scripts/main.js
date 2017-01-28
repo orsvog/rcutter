@@ -4,8 +4,14 @@ $(document).ready(() => {
     const options = {
         canvas: document.getElementById('js-editorcanvas'),
         preview: document.getElementById('js-previewcanvas'),
-        sizeRule: 'stretchByWidth',
-        cropShape: 'circle'
+        sizeRule: 'contain',
+        cropShape: 'circle',
+        cropWindow: {
+            shape: 'circle',
+            pos: {x: 10, y: 10},
+            size: {x: 100, y: 100},
+            color: 'red'
+        }
     }
     $.rcutter = new RabbiCutter(options);
 
@@ -32,6 +38,11 @@ function downloadImage() {
 
 function updateShape (shape) {
     $.rcutter.updateCropShape(shape);
+    $.rcutter.render();
+}
+
+function updateStyles (type) {
+    $.rcutter.updateStyles(type);
     $.rcutter.render();
 }
 

@@ -14,13 +14,9 @@ class RabbiCutter {
 
         this.cropShape = options.cropShape || 'rectangle';
 
-        this.crop = {
-            pos: {x:10, y:10},
-            size: {x:100, y:100},
-            dragSize: 8
-        };
+        this.cropWindow = options.cropWindow;
 
-        this._initStyles();
+        this.updateStyles(this.sizeRule);
 
         this.eventMouseMove = this._onmousemove.bind(this);
         this.eventMouseUp = this._onmouseup.bind(this);
@@ -30,19 +26,19 @@ class RabbiCutter {
     }
 
     loadImage (img) {
-        this.crop = {
-            pos: {x:10, y:10},
-            size: {x:100, y:100},
-            dragSize: 8
-        };
+        this.crop = this.cropWindow
         this.img = img;
         this.render();
         this.canvas.addEventListener('mousedown', this._onmousedown.bind(this));
     }
 
+    getCroppedImage () {
+        return this.preview.toDataURL();
+    }
+
     downloadImage(imageName = this._randomString() + '.png') {
         const link = document.createElement('a');
-        link.href = this.preview.toDataURL();
+        link.href = getCroppedImage();
         link.download = imageName;
         link.click();
     }
@@ -54,7 +50,7 @@ class RabbiCutter {
     render() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this._displayImage();
-        this._updateStyles();
+        this.updateStyles(this.sizeRule);
         this._updateScale();
         this._fillPreview();
         this._drawCropWindow();
@@ -78,7 +74,7 @@ class RabbiCutter {
         if (this._inCropBounds(position.x * this.canvasScale, position.y * this.canvasScale)) {
             this.canvas.addEventListener('mousemove', this.eventMouseMove);
             this.canvas.addEventListener('mouseup', this.eventMouseUp);
-            this.canvas.addEventListener('mouseleave', this.eventMouseLeave);
+            //this.canvas.addEventListener('mouseleave', this.eventMouseLeave);
         }
     }
 
@@ -96,13 +92,13 @@ class RabbiCutter {
     _onmouseup (e) {
         this.canvas.removeEventListener('mousemove', this.eventMouseMove);
         this.canvas.removeEventListener('mouseup', this.eventMouseUp);
-        this.canvas.removeEventListener('mouseleave', this.eventMouseLeave);
+        //this.canvas.removeEventListener('mouseleave', this.eventMouseLeave);
     }
 
     _onmouseleave (e) {
         this.canvas.removeEventListener('mousemove', this.eventMouseMove);
         this.canvas.removeEventListener('mouseup', this.eventMouseUp);
-        this.canvas.removeEventListener('mouseleave', this.eventMouseLeave);
+        //this.canvas.removeEventListener('mouseleave', this.eventMouseLeave);
     }
 
     _displayImage () {
@@ -170,17 +166,17 @@ class RabbiCutter {
     }
 
     _drawCropWindow () {
-        this.context.strokeStyle = 'black';
-        this.context.fillStyle = 'red';
+        this.context.strokeStyle = this.crop.color;
+        this.context.lineWidth = 3;
 
         switch(this.cropShape) {
             default:
             case 'rectangle': {
                 this.context.strokeRect(this.crop.pos.x, this.crop.pos.y, this.crop.size.x, this.crop.size.y);
 
-                // this.context.fillRect(this.crop.pos.x + this.crop.size.x - this.crop.dragSize / 2,
-                //     this.crop.pos.y + this.crop.size.y - this.crop.dragSize / 2,
-                //     this.crop.dragSize, this.crop.dragSize);
+                // this.context.fillRect(this.crop.pos.x + this.crop.size.x - 8 / 2,
+                //     this.crop.pos.y + this.crop.size.y - 8 / 2,
+                //     8, 8);
 
                 break;
             }
@@ -196,32 +192,36 @@ class RabbiCutter {
     }
 
     _moveCropWindow(dx, dy) {
-        //top left
+        //top left point
         const tl = {
             x: this.crop.pos.x,
             y: this.crop.pos.y
         };
-        //bottom right
+        //bottom right point
         const br = {
             x: this.crop.pos.x + this.crop.size.x,
             y: this.crop.pos.y + this.crop.size.y
         };
 
-        if (this._inCanvasBounds(tl.x + dx, tl.y + dy) &&
-            this._inCanvasBounds(br.x + dx, tl.y + dy) &&
-            this._inCanvasBounds(br.x + dx, br.y + dy) &&
-            this._inCanvasBounds(tl.x + dx, br.y + dy))
-        {
-            this.crop.pos.x += dx * this.canvasScale;
-            this.crop.pos.y += dy * this.canvasScale;
+        let x, y;
+        if ((tl.x + dx) < 0) {
+            x = 0;
+        } else if ((br.x + dx) > this.canvas.width) {
+            x = (this.canvas.width - br.x + tl.x ) * this.canvasScale;
+        } else {
+            x = this.crop.pos.x + dx * this.canvasScale;
         }
-    }
 
-    _inCanvasBounds(x, y) {
-        return x >= 0
-            && x <= this.canvas.width
-            && y >= 0
-            && y <= this.canvas.height;
+        if ((tl.y + dy) < 0) {
+            y = 0;
+        } else if ((br.y + dy) > this.canvas.height) {
+            y = (this.canvas.height - br.y + tl.y ) * this.canvasScale;
+        } else {
+            y = this.crop.pos.y + dy * this.canvasScale;
+        }
+
+        this.crop.pos.x = x;
+        this.crop.pos.y = y;
     }
 
     _inCropBounds(x, y) {
@@ -231,56 +231,46 @@ class RabbiCutter {
             && y <= this.crop.pos.y + this.crop.size.y;
     }
 
-    _updateStyles () {
-        if (this.sizeRule === 'contain') {
-            let styles;
+    updateStyles (sizeRule) {
+        // this.canvas.width  = this.canvas.offsetWidth;
+        // this.canvas.height = this.canvas.offsetHeight;
 
-            if(this.canvas.width / this.canvas.height > this.canvasParent.width() / this.canvasParent.height()) {
-                styles = {
-                    width: '100%',
-                    height: 'auto',
-                    margin: 'auto'
-                };
-            } else {
-                styles = {
-                    width: 'auto',
-                    height: '100%',
-                    margin: 'auto'
-                };
-            }
-            $(this.canvas).css(styles);
-        }
-
-    }
-
-    _initStyles () {
-        this.canvas.width  = this.canvas.offsetWidth;
-        this.canvas.height = this.canvas.offsetHeight;
+        this.sizeRule = sizeRule;
 
         let styles;
 
         switch (this.sizeRule) {
-            case 'stretchByWidth':
+            case 'realsize': {
+                styles = {
+                    width: 'auto',
+                    height: 'auto'
+                };
+                break;
+            }
+            case 'stretchByWidth': {
                 styles = {
                     width: '100%',
                     height: 'auto'
                 };
                 break;
-            case 'stretchByHeight':
+            }
+            case 'stretchByHeight': {
                 styles = {
                     width: 'auto',
                     height: '100%'
                 };
                 break;
-            case 'stretch':
+            }
+            case 'stretch': {
                 styles = {
                     width: '100%',
                     height: '100%'
                 };
                 break;
+            }
             default:
-            case 'contain':
-                if(this.canvas.width / this.canvas.height > this.canvasParent.width() / this.canvasParent.height()) {
+            case 'contain': {
+                if (this.canvas.width / this.canvas.height > this.canvasParent.width() / this.canvasParent.height()) {
                     styles = {
                         width: '100%',
                         height: 'auto',
@@ -294,7 +284,7 @@ class RabbiCutter {
                     };
                 }
                 break;
-
+            }
         }
 
         $(this.canvas).css(styles);

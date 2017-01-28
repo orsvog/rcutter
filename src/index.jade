@@ -12,15 +12,23 @@ html
         h1 Welcome to Rabbi Cutter
         .p-l-40.m-b-20
             input.hide(type="file", id="js-fileinput", name="imageLoader", accept="image/jpeg,image/png,image/gif")
-            label.btn(for="js-fileinput") Choose a file...
+            label.btn.noselect(for="js-fileinput") Choose a file...
         .row
             .col.width-20
-                h3 Crop shape:
-                div.m-l-40
-                    input(type="button", value="circle", onclick="updateShape('circle')")
-                    input.m-l-10(type="button", value="rectangle", onclick="updateShape('rectangle')")
-                div.m-l-40.m-t-20
-                    input(type="button", value="download", onclick="downloadImage()")
+                h3.p-b-0  Crop shape:
+                div.m-l-10
+                    input.m-l-10.m-t-10(type="button", value="circle", onclick="updateShape('circle')")
+                    input.m-l-10.m-t-10(type="button", value="rectangle", onclick="updateShape('rectangle')")
+                h3.p-b-0  Other:
+                div.m-l-10
+                    input.m-l-10.m-t-10(type="button", value="download", onclick="downloadImage()")
+                h3.p-b-0 Working field style:
+                div.m-l-10
+                    input.m-l-10.m-t-10(type="button", value="contain", onclick="updateStyles('contain')")
+                    input.m-l-10.m-t-10(type="button", value="stretchByWidth", onclick="updateStyles('stretchByWidth')")
+                    input.m-l-10.m-t-10(type="button", value="stretchByHeight", onclick="updateStyles('stretchByHeight')")
+                    input.m-l-10.m-t-10(type="button", value="stretch", onclick="updateStyles('stretch')")
+                    input.m-l-10.m-t-10(type="button", value="realsize", onclick="updateStyles('realsize')")
             .col.width-80
                 .rcutter
                     canvas(id="js-editorcanvas")
