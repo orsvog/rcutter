@@ -4,47 +4,20 @@ class RabbiCutter {
 
     constructor (options) {
         this.canvas = options.canvas;
-        this.canvasParent = $(this.canvas).parent();
+        this.canvasParent = this.canvas.parentElement;
         this.context = options.canvas.getContext('2d');
         this.canvasScale = 1;
 
         this.preview = options.preview;
-
         this.sizeRule = options.sizeRule;
-
         this.cropShape = options.cropShape || 'rectangle';
-
         this.cropWindow = options.cropWindow;
 
         this.updateStyles(this.sizeRule);
 
         this.eventMouseMove = this._onmousemove.bind(this);
         this.eventMouseUp = this._onmouseup.bind(this);
-        this.eventMouseLeave = this._onmouseleave.bind(this);
-
         window.onresize = this._onresize.bind(this);
-    }
-
-    loadImage (img) {
-        this.crop = this.cropWindow
-        this.img = img;
-        this.render();
-        this.canvas.addEventListener('mousedown', this._onmousedown.bind(this));
-    }
-
-    getCroppedImage () {
-        return this.preview.toDataURL();
-    }
-
-    downloadImage(imageName = this._randomString() + '.png') {
-        const link = document.createElement('a');
-        link.href = getCroppedImage();
-        link.download = imageName;
-        link.click();
-    }
-
-    updateCropShape(cropShape) {
-        this.cropShape = cropShape;
     }
 
     render() {
@@ -56,49 +29,79 @@ class RabbiCutter {
         this._drawCropWindow();
     }
 
-    _onresize() {
-        this._updateScale();
-    }
-
-    _onmousedown(e) {
-        const rect = this.canvas.getBoundingClientRect();
-        const position = {
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top
-        };
-
-        this.lastEvent = {
-            position
-        };
-
-        if (this._inCropBounds(position.x * this.canvasScale, position.y * this.canvasScale)) {
-            this.canvas.addEventListener('mousemove', this.eventMouseMove);
-            this.canvas.addEventListener('mouseup', this.eventMouseUp);
-            //this.canvas.addEventListener('mouseleave', this.eventMouseLeave);
-        }
-    }
-
-    _onmousemove (e) {
-        const position = { x: e.offsetX, y: e.offsetY };
-        const dx = position.x - this.lastEvent.position.x;
-        const dy = position.y - this.lastEvent.position.y;
-
-        this._moveCropWindow(dx, dy);
-
-        this.lastEvent.position = position;
+    loadImage (img) {
+        //this.crop = $.extend(true, {}, this.cropWindow);
+        this.crop = JSON.parse(JSON.stringify(this.cropWindow));
+        this.img = img;
         this.render();
+        this.canvas.addEventListener('mousedown', this._onmousedown.bind(this));
     }
 
-    _onmouseup (e) {
-        this.canvas.removeEventListener('mousemove', this.eventMouseMove);
-        this.canvas.removeEventListener('mouseup', this.eventMouseUp);
-        //this.canvas.removeEventListener('mouseleave', this.eventMouseLeave);
+    getCroppedImage () {
+        return this.preview.toDataURL();
     }
 
-    _onmouseleave (e) {
-        this.canvas.removeEventListener('mousemove', this.eventMouseMove);
-        this.canvas.removeEventListener('mouseup', this.eventMouseUp);
-        //this.canvas.removeEventListener('mouseleave', this.eventMouseLeave);
+    downloadImage(imageName = this._randomString() + '.png') {
+        const link = document.createElement('a');
+        link.href = this.getCroppedImage();
+        link.download = imageName;
+        link.click();
+    }
+
+    updateCropShape(cropShape) {
+        this.cropShape = cropShape;
+    }
+
+    updateStyles (sizeRule) {
+        // this.canvas.width  = this.canvas.offsetWidth;
+        // this.canvas.height = this.canvas.offsetHeight;
+
+        this.sizeRule = sizeRule;
+
+        let styles;
+
+        switch (this.sizeRule) {
+            case 'realsize': {
+                styles = {
+                    width: 'auto',
+                    height: 'auto'
+                };
+                break;
+            }
+            case 'stretchByWidth': {
+                styles = {
+                    width: '100%',
+                    height: 'auto'
+                };
+                break;
+            }
+            case 'stretchByHeight': {
+                styles = {
+                    width: 'auto',
+                    height: '100%'
+                };
+                break;
+            }
+            default:
+            case 'contain': {
+                if (this.canvas.width / this.canvas.height > this.canvasParent.offsetWidth / this.canvasParent.offsetHeight) {
+                    styles = {
+                        width: '100%',
+                        height: 'auto',
+                        margin: 'auto'
+                    };
+                } else {
+                    styles = {
+                        width: 'auto',
+                        height: '100%',
+                        margin: 'auto'
+                    };
+                }
+                break;
+            }
+        }
+
+        $(this.canvas).css(styles);
     }
 
     _displayImage () {
@@ -109,13 +112,14 @@ class RabbiCutter {
 
     _updateScale () {
         console.log();
-        if (this.canvas.style.width === 'auto') {
-            this.canvasScale = this.canvas.height / this.canvasParent.height();
-        } else {
-            this.canvasScale = this.canvas.width / this.canvasParent.width();
+        if(this.canvas.style.width === 'auto' && this.canvas.style.height === 'auto') {
+            this.canvasScale = 1
         }
-
-        console.log(this.canvasScale);
+        else if (this.canvas.style.width === 'auto') {
+            this.canvasScale = this.canvas.height / this.canvasParent.offsetHeight;
+        } else {
+            this.canvasScale = this.canvas.width / this.canvasParent.offsetWidth;
+        }
     }
 
     _fillPreview () {
@@ -167,7 +171,7 @@ class RabbiCutter {
 
     _drawCropWindow () {
         this.context.strokeStyle = this.crop.color;
-        this.context.lineWidth = 3;
+        this.context.lineWidth = 2;
 
         switch(this.cropShape) {
             default:
@@ -207,7 +211,8 @@ class RabbiCutter {
         if ((tl.x + dx) < 0) {
             x = 0;
         } else if ((br.x + dx) > this.canvas.width) {
-            x = (this.canvas.width - br.x + tl.x ) * this.canvasScale;
+            console.log('right boundrie');
+            x = this.canvas.width - this.crop.size.x;
         } else {
             x = this.crop.pos.x + dx * this.canvasScale;
         }
@@ -215,7 +220,7 @@ class RabbiCutter {
         if ((tl.y + dy) < 0) {
             y = 0;
         } else if ((br.y + dy) > this.canvas.height) {
-            y = (this.canvas.height - br.y + tl.y ) * this.canvasScale;
+            y = this.canvas.height - this.crop.size.y;
         } else {
             y = this.crop.pos.y + dy * this.canvasScale;
         }
@@ -231,65 +236,6 @@ class RabbiCutter {
             && y <= this.crop.pos.y + this.crop.size.y;
     }
 
-    updateStyles (sizeRule) {
-        // this.canvas.width  = this.canvas.offsetWidth;
-        // this.canvas.height = this.canvas.offsetHeight;
-
-        this.sizeRule = sizeRule;
-
-        let styles;
-
-        switch (this.sizeRule) {
-            case 'realsize': {
-                styles = {
-                    width: 'auto',
-                    height: 'auto'
-                };
-                break;
-            }
-            case 'stretchByWidth': {
-                styles = {
-                    width: '100%',
-                    height: 'auto'
-                };
-                break;
-            }
-            case 'stretchByHeight': {
-                styles = {
-                    width: 'auto',
-                    height: '100%'
-                };
-                break;
-            }
-            case 'stretch': {
-                styles = {
-                    width: '100%',
-                    height: '100%'
-                };
-                break;
-            }
-            default:
-            case 'contain': {
-                if (this.canvas.width / this.canvas.height > this.canvasParent.width() / this.canvasParent.height()) {
-                    styles = {
-                        width: '100%',
-                        height: 'auto',
-                        margin: 'auto'
-                    };
-                } else {
-                    styles = {
-                        width: 'auto',
-                        height: '100%',
-                        margin: 'auto'
-                    };
-                }
-                break;
-            }
-        }
-
-        $(this.canvas).css(styles);
-    }
-
     _randomString(length = 5) {
         let result = "";
         var symbols = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -298,5 +244,44 @@ class RabbiCutter {
             result += symbols.charAt(Math.floor(Math.random() * symbols.length));
         }
         return result;
+    }
+
+    // events
+
+    _onresize() {
+        this._updateScale();
+    }
+
+    _onmousedown(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        const position = {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+
+        this.lastEvent = {
+            position
+        };
+
+        if (this._inCropBounds(position.x * this.canvasScale, position.y * this.canvasScale)) {
+            this.canvas.addEventListener('mousemove', this.eventMouseMove);
+            this.canvas.addEventListener('mouseup', this.eventMouseUp);
+        }
+    }
+
+    _onmousemove (e) {
+        const position = { x: e.offsetX, y: e.offsetY };
+        const dx = position.x - this.lastEvent.position.x;
+        const dy = position.y - this.lastEvent.position.y;
+
+        this._moveCropWindow(dx, dy);
+
+        this.lastEvent.position = position;
+        this.render();
+    }
+
+    _onmouseup (e) {
+        this.canvas.removeEventListener('mousemove', this.eventMouseMove);
+        this.canvas.removeEventListener('mouseup', this.eventMouseUp);
     }
 }
