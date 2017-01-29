@@ -10,7 +10,8 @@ $(document).ready(() => {
             shape: 'circle',
             pos: {x: 10, y: 10},
             size: {x: 100, y: 100},
-            color: 'red'
+            color: 'red',
+            allowResize: true
         }
     }
     $.rcutter = new RabbiCutter(options);
