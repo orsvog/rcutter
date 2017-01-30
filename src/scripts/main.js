@@ -5,9 +5,8 @@ $(document).ready(() => {
         canvas: document.getElementById('js-editorcanvas'),
         preview: document.getElementById('js-previewcanvas'),
         sizeRule: 'contain',
-        cropShape: 'rectangle',
         cropWindow: {
-            shape: 'circle',
+            shape: 'rectangle',
             pos: {x: 800, y: 450},
             size: {x: 500, y: 300},
             color: 'white',
@@ -15,7 +14,6 @@ $(document).ready(() => {
         }
     }
     $.rcutter = new RabbiCutter(options);
-
     _loadImage($.myImage);  // $.myImage --->  image.js
 });
 
