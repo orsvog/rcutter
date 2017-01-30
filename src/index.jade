@@ -16,12 +16,12 @@ html
             input.hide(type="file", id="js-fileinput", name="imageLoader", accept="image/jpeg,image/png,image/gif")
             label.btn.btn-danger.btn-lg.noselect(for="js-fileinput") Choose a file...
 
-        .btn.btn-primary.menu-btn.m-l-20.m-b-20 Open Menu
+        .btn.btn-primary.menu-btn.m-l-20.m-b-20(onclick="showMenu()") Open Menu
 
         .row
             .col-md-3.col-xs-12.menu
 
-                .menu-close.btn.btn-link close
+                .menu-close.btn.btn-link(onclick="closeMenu()") close
 
                 h3.m-t-10.p-b-0  Crop shape:
                 div.m-l-10

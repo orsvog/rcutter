@@ -19,6 +19,14 @@ $(document).ready(() => {
     //_loadImage('https://s24.postimg.org/g3ftkgjtx/pic.jpg');
 });
 
+function showMenu() {
+    $('.menu').show();
+    console.log(123);
+}
+function closeMenu() {
+    $('.menu').hide();
+}
+
 $('#js-fileinput').change(e => {
     const reader = new FileReader();
 
