@@ -321,15 +321,22 @@ class RabbiCutter {
 
     _drawCropWindow () {
         this.context.strokeStyle = this.crop.color;
+        this.context.fillStyle = 'rgba(0, 0, 0, 0.4)';
         this.context.lineWidth = 2 * this.canvasScale;
 
         switch(this.cropShape) {
             default:
             case 'rectangle': {
-                this.context.strokeRect(this.crop.pos.x, this.crop.pos.y, this.crop.size.x, this.crop.size.y);
+                this.context.setLineDash([6 * this.canvasScale]);
+                this.context.rect(this.crop.pos.x, this.crop.pos.y, this.crop.size.x, this.crop.size.y);
+                this.context.stroke();
+                this.context.setLineDash([]);
+                this.context.rect(this.canvas.width, 0, -this.canvas.width, this.canvas.width);
+                this.context.fill();
 
                 if(this.crop.allowResize) {
-                    this.context.strokeRect(this.crop.pos.x + this.crop.size.x - 4 * this.canvasScale,
+                    this.context.fillStyle = this.crop.color;
+                    this.context.fillRect(this.crop.pos.x + this.crop.size.x - 4 * this.canvasScale,
                         this.crop.pos.y + this.crop.size.y - 4 * this.canvasScale,
                         8 * this.canvasScale, 8 * this.canvasScale);
                 }
@@ -337,12 +344,17 @@ class RabbiCutter {
                 break;
             }
             case 'circle': {
+                this.context.setLineDash([6 * this.canvasScale]);
                 this.context.beginPath();
                 this.context.arc(this.crop.pos.x + this.crop.size.x / 2, this.crop.pos.y + this.crop.size.y / 2, this.crop.size.x / 2, 0, 2 * Math.PI);
                 this.context.stroke();
+                this.context.setLineDash([]);
+                this.context.rect(this.canvas.width, 0, -this.canvas.width, this.canvas.width);
+                this.context.fill();
 
                 if(this.crop.allowResize) {
-                    this.context.strokeRect(this.crop.pos.x + this.crop.size.x - 4 * this.canvasScale,
+                    this.context.fillStyle = this.crop.color;
+                    this.context.fillRect(this.crop.pos.x + this.crop.size.x - 4 * this.canvasScale,
                         this.crop.pos.y + this.crop.size.y / 2 - 4 * this.canvasScale,
                         8 * this.canvasScale, 8 * this.canvasScale);
                 }
@@ -388,6 +400,13 @@ class RabbiCutter {
     _resizeCropWindow(dx, dy) {
         this.crop.size.x += dx * this.canvasScale;
         this.crop.size.y += dy * this.canvasScale;
+
+        if (this.crop.size.x < 20 * this.canvasScale) {
+            this.crop.size.x = 20 * this.canvasScale;
+        }
+        if (this.crop.size.y < 20 * this.canvasScale) {
+            this.crop.size.y = 20 * this.canvasScale;
+        }
 
         if(this.cropShape === 'circle') {
             this.crop.size.y = this.crop.size.x;

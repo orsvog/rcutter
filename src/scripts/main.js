@@ -10,7 +10,7 @@ $(document).ready(() => {
             shape: 'circle',
             pos: {x: 800, y: 450},
             size: {x: 500, y: 300},
-            color: 'red',
+            color: 'white',
             allowResize: true
         }
     }
