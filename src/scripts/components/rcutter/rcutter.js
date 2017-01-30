@@ -21,21 +21,41 @@ class RabbiCutter {
     }
 
     render() {
+        if(!this._imageIsLoaded()) {
+            return;
+        }
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this._displayImage();
         this.updateStyles(this.sizeRule);
         this._updateScale();
         this._fillPreview();
         this._drawCropWindow();
+
+        return true;
     }
 
-    loadImage (img) {
+    loadImage (src) {
         //this.crop = $.extend(true, {}, this.cropWindow);
         this.crop = JSON.parse(JSON.stringify(this.cropWindow));
-        this.img = img;
-        this.render();
-        this.canvas.addEventListener('mousedown', this._onmousedown.bind(this));
-        this.canvas.addEventListener('touchstart', this._onmousedown.bind(this));
+
+        this.img = new Image();
+
+
+        return new Promise(function(resolve, reject) {
+            this.img.onload = () => {
+                this.render();
+                this.canvas.addEventListener('mousedown', this._onmousedown.bind(this));
+                this.canvas.addEventListener('touchstart', this._onmousedown.bind(this));
+
+                resolve('Image has been successfully loaded');
+            };
+
+            this.img.onerror = () => {
+                reject('Image couldn\'t be loaded');
+            };
+
+            this.img.src = src;
+        }.bind(this));
     }
 
     // events
@@ -107,38 +127,77 @@ class RabbiCutter {
 
 
     getCroppedImage () {
+        if(!this._imageIsLoaded()) {
+            return;
+        }
         return this.preview.toDataURL();
     }
 
     downloadImage(imageName = this._randomString() + '.png') {
+        if(!this._imageIsLoaded()) {
+            return;
+        }
         const link = document.createElement('a');
         link.href = this.getCroppedImage();
         link.download = imageName;
         link.click();
+
+        return true;
     }
 
     updateCropShape(cropShape) {
+        if(!this._imageIsLoaded()) {
+            return;
+        }
         this.cropShape = cropShape;
 
         if (this.cropShape === 'circle') {
             this.crop.size.y = this.crop.size.x < this.crop.size.y ? this.crop.size.x : this.crop.size.y;
             this.crop.size.x = this.crop.size.y;
         }
+
+        return true;
     }
 
     updateCropSize(x, y) {
-        this.crop.size = {x: x*1, y: y*1};
+        if(!this._imageIsLoaded()) {
+            return;
+        }
+        if (x > this.canvas.width - this.crop.pos.x) {
+            x = this.canvas.width - this.crop.pos.x;
+        }
+        if (y > this.canvas.height - this.crop.pos.y) {
+            y = this.canvas.height - this.crop.pos.y;
+        }
+        this.crop.size = { x: x*1, y: y*1 };
         this.cropWindow.size = this.crop.size;
 
         if (this.cropShape === 'circle') {
             this.crop.size.y = this.crop.size.x < this.crop.size.y ? this.crop.size.x : this.crop.size.y;
             this.crop.size.x = this.crop.size.y;
         }
+
+        return true;
+    }
+
+    getCropSize() {
+        if(!this._imageIsLoaded()) {
+            return;
+        }
+        return {
+            x: this.crop.size.x,
+            y: this.crop.size.y
+        }
     }
 
     allowCropResize(isAllowed) {
+        if(!this._imageIsLoaded()) {
+            return;
+        }
         this.cropWindow.allowResize = isAllowed;
         this.crop.allowResize = isAllowed;
+
+        return true;
     }
 
     updateStyles (sizeRule) {
@@ -372,5 +431,9 @@ class RabbiCutter {
             result += symbols.charAt(Math.floor(Math.random() * symbols.length));
         }
         return result;
+    }
+
+    _imageIsLoaded() {
+        return this.img && this.img.complete;
     }
 }

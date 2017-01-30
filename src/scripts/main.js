@@ -8,15 +8,15 @@ $(document).ready(() => {
         cropShape: 'rectangle',
         cropWindow: {
             shape: 'circle',
-            pos: {x: 10, y: 10},
-            size: {x: 100, y: 100},
+            pos: {x: 800, y: 450},
+            size: {x: 500, y: 300},
             color: 'red',
             allowResize: true
         }
     }
     $.rcutter = new RabbiCutter(options);
 
-    //_loadImage('https://s24.postimg.org/g3ftkgjtx/pic.jpg');
+    _loadImage($.myImage);  // $.myImage --->  image.js
 });
 
 function showMenu() {
@@ -59,17 +59,28 @@ function updateStyles (type) {
 function updateCropSize () {
     $.rcutter.updateCropSize($('#js-crop-x').val(), $('#js-crop-y').val());
     $.rcutter.render();
+    getCropSize();
 }
 
 function getCropSize() {
-    $('#js-crop-x').val($.rcutter.crop.size.x);
-    $('#js-crop-y').val($.rcutter.crop.size.y);
+    const size = $.rcutter.getCropSize();
+    if (size) {
+        $('#js-crop-x').val(size.x);
+        $('#js-crop-y').val(size.y);
+    }
 }
 
 function _loadImage(src) {
-    const img = new Image();
-    img.onload = () => {
-        $.rcutter.loadImage(img);
-    };
-    img.src = src;
+    $.rcutter.loadImage(src)
+        .then(msg => {
+            $('#js-message').text(msg);
+            $('#js-message').removeClass('alert-warning').addClass('alert-success');
+            $("input").prop('disabled', false);
+        })
+        .catch(msg => {
+            $('#js-message').text(msg);
+            $('#js-message').removeClass('alert-success').addClass('alert-warning');
+            $("input").prop('disabled', true);
+        });
+
 }

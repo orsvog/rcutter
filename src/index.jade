@@ -15,6 +15,7 @@ html
         .p-l-40.m-b-20
             input.hide(type="file", id="js-fileinput", name="imageLoader", accept="image/jpeg,image/png,image/gif")
             label.btn.btn-danger.btn-lg.noselect(for="js-fileinput") Choose a file...
+            div(id="js-message", class="alert", style="width: 320px")
 
         .btn.btn-primary.menu-btn.m-l-20.m-b-20(onclick="showMenu()") Open Menu
 
@@ -48,7 +49,7 @@ html
                 .row
                     .col-xs-11.col-xs-push-1(class="checkbox")
                         label
-                            input(id="js-allow-resize", type="checkbox", checked)
+                            input(id="js-allow-resize", type="checkbox", checked, disabled=)
                             Option Allow crop window resize by user
 
                 h3.m-t-10.p-b-0  Other:
@@ -73,4 +74,5 @@ html
 
         script(src="scripts/components/jquery/jquery-3.1.1.min.js")
         script(src="scripts/components/rcutter/rcutter.js")
+        script(src="scripts/image.js")
         script(src="scripts/main.js")
