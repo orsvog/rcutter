@@ -5,7 +5,7 @@ $(document).ready(() => {
         canvas: document.getElementById('js-editorcanvas'),
         preview: document.getElementById('js-previewcanvas'),
         sizeRule: 'contain',
-        cropShape: 'circle',
+        cropShape: 'rectangle',
         cropWindow: {
             shape: 'circle',
             pos: {x: 10, y: 10},
@@ -21,16 +21,17 @@ $(document).ready(() => {
 
 $('#js-fileinput').change(e => {
     const reader = new FileReader();
-    const img = new Image();
 
     reader.onload = event => {
         _loadImage(event.target.result);
     };
-    img.onload = () => {
-        $.rcutter.loadImage(img);
-    };
 
     reader.readAsDataURL(e.target.files[0]);
+});
+
+$('#js-allow-resize').change(e => {
+    $.rcutter.allowCropResize($('#js-allow-resize').is(":checked"));
+    $.rcutter.render();
 });
 
 function downloadImage() {
@@ -45,6 +46,16 @@ function updateShape (shape) {
 function updateStyles (type) {
     $.rcutter.updateStyles(type);
     $.rcutter.render();
+}
+
+function updateCropSize () {
+    $.rcutter.updateCropSize($('#js-crop-x').val(), $('#js-crop-y').val());
+    $.rcutter.render();
+}
+
+function getCropSize() {
+    $('#js-crop-x').val($.rcutter.crop.size.x);
+    $('#js-crop-y').val($.rcutter.crop.size.y);
 }
 
 function _loadImage(src) {

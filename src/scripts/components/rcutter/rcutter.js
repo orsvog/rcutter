@@ -35,6 +35,7 @@ class RabbiCutter {
         this.img = img;
         this.render();
         this.canvas.addEventListener('mousedown', this._onmousedown.bind(this));
+        this.canvas.addEventListener('touchstart', this._onmousedown.bind(this));
     }
 
     // events
@@ -43,16 +44,17 @@ class RabbiCutter {
     }
 
     _onmousedown(e) {
+        e.preventDefault();
         const rect = this.canvas.getBoundingClientRect();
         const position = {
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top
+            x: e.pageX || e.touches[0].pageX,
+            y: e.pageY || e.touches[0].pageY
         };
 
         let cropAction;
-        if (this._inDragBounds(position.x * this.canvasScale, position.y * this.canvasScale)) {
+        if (this.crop.allowResize && this._inDragBounds((position.x - rect.left) * this.canvasScale, (position.y - rect.top) * this.canvasScale)) {
             cropAction = 'resize';
-        } else if (this._inCropBounds(position.x * this.canvasScale, position.y * this.canvasScale)) {
+        } else if (this._inCropBounds((position.x - rect.left) * this.canvasScale, (position.y - rect.top) * this.canvasScale)) {
             cropAction = 'drag';
         }
 
@@ -63,10 +65,16 @@ class RabbiCutter {
 
         this.canvas.addEventListener('mousemove', this.eventMouseMove);
         this.canvas.addEventListener('mouseup', this.eventMouseUp);
+        this.canvas.addEventListener('touchmove', this.eventMouseMove);
+        this.canvas.addEventListener('touchend', this.eventMouseUp);
     }
 
     _onmousemove (e) {
-        const position = { x: e.offsetX, y: e.offsetY };
+        e.preventDefault();
+        const position = {
+            x: e.pageX || e.touches[0].pageX,
+            y: e.pageY || e.touches[0].pageY
+        };
         const dx = position.x - this.lastEvent.position.x;
         const dy = position.y - this.lastEvent.position.y;
 
@@ -88,8 +96,11 @@ class RabbiCutter {
     }
 
     _onmouseup (e) {
+        e.preventDefault();
         this.canvas.removeEventListener('mousemove', this.eventMouseMove);
         this.canvas.removeEventListener('mouseup', this.eventMouseUp);
+        this.canvas.addEventListener('touchmove', this.eventMouseMove);
+        this.canvas.addEventListener('touchend', this.eventMouseUp);
     }
     //end events
 
@@ -113,6 +124,21 @@ class RabbiCutter {
             this.crop.size.y = this.crop.size.x < this.crop.size.y ? this.crop.size.x : this.crop.size.y;
             this.crop.size.x = this.crop.size.y;
         }
+    }
+
+    updateCropSize(x, y) {
+        this.crop.size = {x: x*1, y: y*1};
+        this.cropWindow.size = this.crop.size;
+
+        if (this.cropShape === 'circle') {
+            this.crop.size.y = this.crop.size.x < this.crop.size.y ? this.crop.size.x : this.crop.size.y;
+            this.crop.size.x = this.crop.size.y;
+        }
+    }
+
+    allowCropResize(isAllowed) {
+        this.cropWindow.allowResize = isAllowed;
+        this.crop.allowResize = isAllowed;
     }
 
     updateStyles (sizeRule) {
@@ -236,7 +262,7 @@ class RabbiCutter {
 
     _drawCropWindow () {
         this.context.strokeStyle = this.crop.color;
-        this.context.lineWidth = 2;
+        this.context.lineWidth = 2 * this.canvasScale;
 
         switch(this.cropShape) {
             default:

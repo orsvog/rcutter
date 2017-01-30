@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  padding: 0;
+  padding: 0 15px;
 }
 * {
   @include box-sizing();
@@ -17,4 +17,39 @@ body {
 }
 .hide {
   display: none;
+}
+
+.menu {
+  position: relative;
+
+  .menu-close {
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+}
+
+.menu-btn {
+  display: none;
+}
+
+@media screen and (max-width: 991px) {
+  .menu {
+    display: none;
+    position: fixed;
+    width: 320px;
+    height: 100%;
+    left: -320px;
+    top: 0;
+    background-color: #bdb0b0;
+
+    .menu-close {
+      display: inline-block;
+    }
+  }
+
+  .menu-btn {
+    display: inline-block;
+  }
 }

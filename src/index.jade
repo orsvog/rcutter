@@ -4,37 +4,70 @@ html
         meta(name="viewport", content="width=device-width, initial-scale=1.0")
         title Rabbi cutter
         link(href="https://fonts.googleapis.com/css?family=Roboto", rel="stylesheet")
+        link(rel="stylesheet", href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css")
         link(href='./styles/main.css', rel='stylesheet')
         link(rel="shortcut icon", href="http://www.iconj.com/ico/z/1/z1iy5rqo7d.ico", type="image/x-icon")
 
 
     body
+
         h1 Welcome to Rabbi Cutter
         .p-l-40.m-b-20
             input.hide(type="file", id="js-fileinput", name="imageLoader", accept="image/jpeg,image/png,image/gif")
-            label.btn.noselect(for="js-fileinput") Choose a file...
+            label.btn.btn-danger.btn-lg.noselect(for="js-fileinput") Choose a file...
+
+        .btn.btn-primary.menu-btn.m-l-20.m-b-20 Open Menu
+
         .row
-            .col.width-20
-                h3.p-b-0  Crop shape:
+            .col-md-3.col-xs-12.menu
+
+                .menu-close.btn.btn-link close
+
+                h3.m-t-10.p-b-0  Crop shape:
                 div.m-l-10
-                    input.m-l-10.m-t-10(type="button", value="circle", onclick="updateShape('circle')")
-                    input.m-l-10.m-t-10(type="button", value="rectangle", onclick="updateShape('rectangle')")
-                h3.p-b-0  Other:
+                    .btn.btn-success.btn-sm.m-l-10.m-t-10(onclick="updateShape('circle')") circle
+                    .btn.btn-success.btn-sm.m-l-10.m-t-10(onclick="updateShape('rectangle')") rectangle
+
+                h3.m-t-10.p-b-0  Crop size:
+                .row
+                    .col-xs-2
+                        label.m-l-10.m-t-10(for="js-crop-x") Width:
+                    .col-xs-5
+                        input.m-t-10(id="js-crop-x", type="number", class="form-control", value="100", step="50", min="50")
+                .row
+                    .col-xs-2
+                        label.m-l-10.m-t-10(for="js-crop-y") Height:
+                    .col-xs-5
+                        input.m-t-10(id="js-crop-y", type="number", class="form-control", value="100", step="50", min="50")
+                .row
+                    .col-xs-10.col-xs-push-2
+                        .btn.btn-success.btn-sm.m-t-10(onclick="updateCropSize()") change
+                        .btn.btn-info.btn-sm.m-t-10.m-l-10(onclick="getCropSize()") get current
+
+                h3.m-t-10.p-b-0 Crop resize:
+                .row
+                    .col-xs-11.col-xs-push-1(class="checkbox")
+                        label
+                            input(id="js-allow-resize", type="checkbox", checked)
+                            Option Allow crop window resize by user
+
+                h3.m-t-10.p-b-0  Other:
                 div.m-l-10
-                    input.m-l-10.m-t-10(type="button", value="download", onclick="downloadImage()")
-                h3.p-b-0 Working field style:
+                    .btn.btn-success.btn-sm.m-l-10.m-t-10(onclick="downloadImage()") cut it!
+
+                h3.m-t-10.p-b-0 Working field style:
                 div.m-l-10
-                    input.m-l-10.m-t-10(type="button", value="contain", onclick="updateStyles('contain')")
-                    input.m-l-10.m-t-10(type="button", value="stretchByWidth", onclick="updateStyles('stretchByWidth')")
-                    input.m-l-10.m-t-10(type="button", value="stretchByHeight", onclick="updateStyles('stretchByHeight')")
-                    input.m-l-10.m-t-10(type="button", value="realsize", onclick="updateStyles('realsize')")
+                    .btn.btn-success.btn-sm.m-l-10.m-t-10(onclick="updateStyles('contain')") contain
+                    .btn.btn-success.btn-sm.m-l-10.m-t-10(onclick="updateStyles('stretchByWidth')") stretchByWidth
+                    .btn.btn-success.btn-sm.m-l-10.m-t-10(onclick="updateStyles('stretchByHeight')") stretchByHeight
+                    .btn.btn-success.btn-sm.m-l-10.m-t-10(onclick="updateStyles('realsize')") realsize
 
                 .m-t-20.m-l-10.m-r-10
                     div
                         canvas(id="js-previewcanvas", onclick="downloadImage()",
-                            style="display: block; cursor: pointer; max-width: 100%; min-width: auto; max-height: 300px; margin: auto")
+                        style="display: block; cursor: pointer; max-width: 100%; min-width: auto; max-height: 300px; margin: auto")
 
-            .col.width-80
+            .col-md-9.col-xs-12
                 .rcutter(style="width: 100%; height: 800px")
                     canvas(id="js-editorcanvas")
 
