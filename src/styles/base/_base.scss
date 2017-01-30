@@ -21,6 +21,7 @@ body {
 
 .menu {
   position: relative;
+  overflow: scroll;
   z-index: 2;
 
   .menu-close {
