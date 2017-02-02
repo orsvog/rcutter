@@ -2,16 +2,11 @@
 
 Natural image cropper...
 
-## Demo
-
-[http://codepen.io/Guelderman/pen/VPyZOQ(http://codepen.io/Guelderman/pen/VPyZOQ).
-
 ## Basic setup
 
 Include files:
 
 ```html
-<script src="/path/to/jquery.js"></script><!-- jQuery is required -->
 <script src="/path/to/rcutter.js"></script>
 ```
 
@@ -111,6 +106,3 @@ If size is larger then image => { x: 50%, y: 50% }
 Allows or disallows resize of cropper window
 
 ## Methods
-
-there are few
-to be done..  I'm tired
