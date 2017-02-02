@@ -19,7 +19,7 @@ class RabbiCutter {
         this.canvasParent = this.canvas.parentElement;
         this.context = options.canvas.getContext('2d');
         this.canvasScale = 1;
-        this.resizeRect = 9;
+        this.resizeRect = 14;
         this._updateResizeRect();
 
         this.preview = options.preview;
@@ -306,11 +306,11 @@ class RabbiCutter {
 
     _updateResizeRect () {
         if(window.innerWidth < 500) {
-            this.resizeRect = 20;
+            this.resizeRect = 24;
         } else if (window.innerWidth < 1000) {
-            this.resizeRect = 16;
+            this.resizeRect = 18;
         } else {
-            this.resizeRect = 9;
+            this.resizeRect = 14;
         }
     }
 
@@ -483,7 +483,7 @@ class RabbiCutter {
             case 'rectangle': {
                 pos = {
                     x: this.crop.pos.x + this.crop.size.x - this.resizeRect/2 * this.canvasScale,
-                    y: this.crop.pos.y + this.crop.size.y
+                    y: this.crop.pos.y + this.crop.size.y - this.resizeRect/2 * this.canvasScale
                 };
 
                 break;
