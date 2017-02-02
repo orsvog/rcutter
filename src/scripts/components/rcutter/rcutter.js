@@ -4,25 +4,15 @@ class RabbiCutter {
 
     constructor (options) {
 
-        if(!options.canvas) {
+        if(!options.canvas || options.canvas.tagName !== 'CANVAS') {
             return { msg: 'invalid options' };
-        } else if(options.canvas.tagName !== 'CANVAS') {
-            return { msg: 'invalid options' };
-        } else if(!options.preview || options.preview.tagName !== 'CANVAS') {
+        }
+
+        if(!options.preview || options.preview.tagName !== 'CANVAS') {
             options.preview = document.createElement('canvas');
         }
 
-        const defaultOptions = {
-            sizeRule: 'contain',
-            cropWindow: {
-                pos: {x: 10, y: 10},
-                size: {x: 150, y: 150},
-                shape: 'rectangle',
-                color: 'white',
-                allowResize: true
-            }
-        }
-        options = $.extend({}, defaultOptions, options);
+        options = Object.assign({}, this._getDefaultOptions(), options);
 
 
         this.canvas = options.canvas;
@@ -40,7 +30,6 @@ class RabbiCutter {
 
         this.eventMouseMove = this._onmousemove.bind(this);
         this.eventMouseUp = this._onmouseup.bind(this);
-        window.onresize = this._onresize.bind(this);
     }
 
     render() {
@@ -72,6 +61,7 @@ class RabbiCutter {
                 this.render();
                 this.canvas.addEventListener('mousedown', this._onmousedown.bind(this));
                 this.canvas.addEventListener('touchstart', this._onmousedown.bind(this));
+                window.addEventListener('resize', this._onresize.bind(this));
 
                 resolve('Image has been successfully loaded');
             };
@@ -229,9 +219,6 @@ class RabbiCutter {
     }
 
     updateStyles (sizeRule) {
-        // this.canvas.width  = this.canvas.offsetWidth;
-        // this.canvas.height = this.canvas.offsetHeight;
-
         this.sizeRule = sizeRule;
 
         let styles;
@@ -277,7 +264,9 @@ class RabbiCutter {
             }
         }
 
-        $(this.canvas).css(styles);
+        this.canvas.style.width = styles.width;
+        this.canvas.style.height = styles.height;
+        this.canvas.style.margin = styles.margin;
     }
 
     _displayImage () {
@@ -293,7 +282,7 @@ class RabbiCutter {
         };
         if (!this._inBounds({ x: this.crop.pos.x, y: this.crop.pos.y }, canvasRect)
         || !this._inBounds({ x: this.crop.pos.x + this.crop.size.x, y: this.crop.pos.y + this.crop.size.y }, canvasRect)) {
-            this.cropWindow = $.extend({}, this.cropWindow, {
+            this.cropWindow = Object.assign({}, this.cropWindow, {
                 pos: { x: canvasRect.size.x / 4, y: canvasRect.size.y / 4 },
                 size: { x: canvasRect.size.x / 2, y: canvasRect.size.y / 2 },
             });
@@ -377,44 +366,47 @@ class RabbiCutter {
         this.context.strokeStyle = this.crop.color;
         this.context.fillStyle = 'rgba(0, 0, 0, 0.4)';
         this.context.lineWidth = 2 * this.canvasScale;
+        this.context.setLineDash([6 * this.canvasScale]);
+
+        let resizeRect;
 
         switch(this.crop.shape) {
             default:
             case 'rectangle': {
-                this.context.setLineDash([6 * this.canvasScale]);
                 this.context.rect(this.crop.pos.x, this.crop.pos.y, this.crop.size.x, this.crop.size.y);
-                this.context.stroke();
-                this.context.setLineDash([]);
-                this.context.rect(this.canvas.width, 0, -this.canvas.width, this.canvas.height);
-                this.context.fill();
 
-                if(this.crop.allowResize) {
-                    this.context.fillStyle = this.crop.color;
-                    this.context.fillRect(this.crop.pos.x + this.crop.size.x - this.resizeRect / 2 * this.canvasScale,
-                        this.crop.pos.y + this.crop.size.y - this.resizeRect / 2 * this.canvasScale,
-                        this.resizeRect * this.canvasScale, this.resizeRect * this.canvasScale);
-                }
+                resizeRect = {
+                    x1: this.crop.pos.x + this.crop.size.x - this.resizeRect / 2 * this.canvasScale,
+                    y1: this.crop.pos.y + this.crop.size.y - this.resizeRect / 2 * this.canvasScale,
+                    x2: this.resizeRect * this.canvasScale,
+                    y2: this.resizeRect * this.canvasScale
+                };
 
                 break;
             }
             case 'circle': {
-                this.context.setLineDash([6 * this.canvasScale]);
                 this.context.beginPath();
                 this.context.arc(this.crop.pos.x + this.crop.size.x / 2, this.crop.pos.y + this.crop.size.y / 2, this.crop.size.x / 2, 0, 2 * Math.PI);
-                this.context.stroke();
-                this.context.setLineDash([]);
-                this.context.rect(this.canvas.width, 0, -this.canvas.width, this.canvas.height);
-                this.context.fill();
 
-                if(this.crop.allowResize) {
-                    this.context.fillStyle = this.crop.color;
-                    this.context.fillRect(this.crop.pos.x + this.crop.size.x - this.resizeRect/2 * this.canvasScale,
-                        this.crop.pos.y + this.crop.size.y / 2 - this.resizeRect/2 * this.canvasScale,
-                        this.resizeRect * this.canvasScale, this.resizeRect * this.canvasScale);
-                }
+                resizeRect = {
+                    x1: this.crop.pos.x + this.crop.size.x - this.resizeRect / 2 * this.canvasScale,
+                    y1: this.crop.pos.y + this.crop.size.y / 2 - this.resizeRect / 2 * this.canvasScale,
+                    x2: this.resizeRect * this.canvasScale,
+                    y2: this.resizeRect * this.canvasScale
+                };
 
                 break;
             }
+        }
+
+        this.context.stroke();
+        this.context.setLineDash([]);
+        this.context.rect(this.canvas.width, 0, -this.canvas.width, this.canvas.height);
+        this.context.fill();
+
+        if(this.crop.allowResize) {
+            this.context.fillStyle = this.crop.color;
+            this.context.fillRect(resizeRect.x1, resizeRect.y1, resizeRect.x2, resizeRect.y2);
         }
     }
 
@@ -479,31 +471,35 @@ class RabbiCutter {
     }
 
     _inDragBounds(x, y) {
+        let pos;
+        const size = {
+            x: this.resizeRect * this.canvasScale,
+            y: this.resizeRect * this.canvasScale
+        };
+
         switch(this.crop.shape) {
             case 'rectangle': {
-                const pos = {
+                pos = {
                     x: this.crop.pos.x + this.crop.size.x - this.resizeRect/2 * this.canvasScale,
-                    y: this.crop.pos.y + this.crop.size.y - this.resizeRect/2 * this.canvasScale
+                    y: this.crop.pos.y + this.crop.size.y
                 };
-                const size = {
-                    x: this.crop.pos.x + this.crop.size.x + this.resizeRect/2 * this.canvasScale,
-                    y: this.crop.pos.y + this.crop.size.y + this.resizeRect/2 * this.canvasScale
-                };
-                return this._inBounds({ x, y }, { pos, size });
+
+                break;
             }
             case 'circle': {
-                const pos = {
+                pos = {
                     x: this.crop.pos.x + this.crop.size.x - this.resizeRect/2 * this.canvasScale,
                     y: this.crop.pos.y + this.crop.size.y / 2 - this.resizeRect/2 * this.canvasScale
                 };
-                const size = {
-                    x: this.crop.pos.x + this.crop.size.x + this.resizeRect/2 * this.canvasScale,
-                    y: this.crop.pos.y + this.crop.size.y / 2 + this.resizeRect/2 * this.canvasScale
-                };
-                return this._inBounds({ x, y }, { pos, size });
+
+                break;
             }
-            default:
+            default: {
+                break;
+            }
         }
+
+        return this._inBounds({ x, y }, { pos, size });
     }
 
     _randomString(length = 5) {
@@ -518,5 +514,18 @@ class RabbiCutter {
 
     _imageIsLoaded() {
         return this.img && this.img.complete;
+    }
+
+    _getDefaultOptions() {
+        return {
+            sizeRule: 'contain',
+            cropWindow: {
+                pos: {x: 10, y: 10},
+                size: {x: 150, y: 150},
+                shape: 'rectangle',
+                color: 'white',
+                allowResize: true
+            }
+        };
     }
 }
