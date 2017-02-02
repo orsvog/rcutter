@@ -81,7 +81,7 @@ class RabbiCutter {
     }
 
     _onmousedown(e) {
-        e.preventDefault();
+        //e.preventDefault();
         const rect = this.canvas.getBoundingClientRect();
         const position = {
             x: e.pageX || e.touches[0].pageX,
@@ -100,10 +100,12 @@ class RabbiCutter {
             cropAction
         };
 
-        this.canvas.addEventListener('mousemove', this.eventMouseMove);
-        this.canvas.addEventListener('mouseup', this.eventMouseUp);
-        this.canvas.addEventListener('touchmove', this.eventMouseMove);
-        this.canvas.addEventListener('touchend', this.eventMouseUp);
+        if (cropAction) {
+            window.addEventListener('mousemove', this.eventMouseMove);
+            window.addEventListener('mouseup', this.eventMouseUp);
+            this.canvas.addEventListener('touchmove', this.eventMouseMove);
+            this.canvas.addEventListener('touchend', this.eventMouseUp);
+        }
     }
 
     _onmousemove (e) {
@@ -134,8 +136,8 @@ class RabbiCutter {
 
     _onmouseup (e) {
         e.preventDefault();
-        this.canvas.removeEventListener('mousemove', this.eventMouseMove);
-        this.canvas.removeEventListener('mouseup', this.eventMouseUp);
+        window.removeEventListener('mousemove', this.eventMouseMove);
+        window.removeEventListener('mouseup', this.eventMouseUp);
         this.canvas.addEventListener('touchmove', this.eventMouseMove);
         this.canvas.addEventListener('touchend', this.eventMouseUp);
     }
