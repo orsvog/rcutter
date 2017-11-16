@@ -1,84 +1,93 @@
 'use strict';
 
-$(document).ready(() => {
+var rcutter;
+document.addEventListener('DOMContentLoaded', () => {
     const options = {
         canvas: document.getElementById('js-editorcanvas'),
         preview: document.getElementById('js-previewcanvas'),
         sizeRule: 'contain',
         cropWindow: {
             shape: 'rectangle',
-            pos: {x: 800, y: 450},
-            size: {x: 500, y: 300},
+            pos: {
+                x: 800,
+                y: 450
+            },
+            size: {
+                x: 500,
+                y: 300
+            },
             color: 'white',
             allowResize: true
         }
     }
-    $.rcutter = new RabbiCutter(options);
-    _loadImage($.myImage);  // $.myImage --->  image.js
-});
+    rcutter = new RabbiCutter(options);
+    _loadImage(myImage); // myImage --->  image.js  default image
+}, false);
 
-function showMenu() {
-    $('.menu').show();
-    console.log(123);
-}
-function closeMenu() {
-    $('.menu').hide();
+function toggleMenu(display) {
+    document.getElementById('menu').style.display = display;
 }
 
-$('#js-fileinput').change(e => {
+document.getElementById('js-fileinput').addEventListener('change', (e) => {
     const reader = new FileReader();
-
     reader.onload = event => {
         _loadImage(event.target.result);
     };
-
     reader.readAsDataURL(e.target.files[0]);
-});
+}, false);
 
-$('#js-allow-resize').change(e => {
-    $.rcutter.allowCropResize($('#js-allow-resize').is(":checked"));
-    $.rcutter.render();
-});
+document.getElementById('js-allow-resize').addEventListener('change', (e) => {
+    rcutter.allowCropResize(document.getElementById('js-allow-resize').checked);
+    rcutter.render();
+}, false);
 
 function downloadImage() {
-    $.rcutter.downloadImage();
+    rcutter.downloadImage();
 }
 
-function updateShape (shape) {
-    $.rcutter.updateCropShape(shape);
-    $.rcutter.render();
+function updateShape(shape) {
+    rcutter.updateCropShape(shape);
+    rcutter.render();
 }
 
-function updateStyles (type) {
-    $.rcutter.updateStyles(type);
-    $.rcutter.render();
+function updateStyles(type) {
+    rcutter.updateStyles(type);
+    rcutter.render();
 }
 
-function updateCropSize () {
-    $.rcutter.updateCropSize($('#js-crop-x').val(), $('#js-crop-y').val());
-    $.rcutter.render();
+function updateCropSize() {
+    rcutter.updateCropSize(document.getElementById('js-crop-x').value, document.getElementById('js-crop-y').value);
+    rcutter.render();
     getCropSize();
 }
 
 function getCropSize() {
-    const size = $.rcutter.getCropSize();
+    const size = rcutter.getCropSize();
     if (size) {
-        $('#js-crop-x').val(size.x);
-        $('#js-crop-y').val(size.y);
+        document.getElementById('js-crop-x').value = size.x;
+        document.getElementById('js-crop-x').value = size.y;
     }
 }
 
 function _loadImage(src) {
-    $.rcutter.loadImage(src)
+    rcutter.loadImage(src)
         .then(msg => {
-            $('#js-message').text(msg);
-            $('#js-message').removeClass('alert-warning').addClass('alert-success');
-            $("input").prop('disabled', false);
+            document.getElementById('js-message').innerText = msg;
+            document.getElementById('js-message').classList.remove("alert-warning");
+            document.getElementById('js-message').classList.add("alert-success");
+            let inputs = document.getElementsByTagName('input');
+            for (let i = 0; i < inputs.length; i++) {
+                inputs[i].disabled = false;
+            }
         })
         .catch(msg => {
-            $('#js-message').text(msg);
-            $('#js-message').removeClass('alert-success').addClass('alert-warning');
-            $("input").prop('disabled', true);
+            document.getElementById('js-message').innerText = msg;
+            document.getElementById('js-message').classList.remove("alert-success");
+            document.getElementById('js-message').classList.add("alert-warning");
+            let inputs = document.getElementsByTagName('input');
+            for (let i = 0; i < inputs.length; i++) {
+                inputs[i].disabled = true;
+            }
         });
 
 }
